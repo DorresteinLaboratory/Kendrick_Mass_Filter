@@ -77,6 +77,7 @@ Kendrick.mass.filter <- function(data_matrix,
                        # vec now includes a third column with intensity
                        vec, 
                        polymer="polyethylene_glycol_other_C2H4O1",
+		       repeat_unit_mass=44.02622,
                        KMD=0.01, 
                        RT=0.2,
                        connection_filter=TRUE, 
@@ -88,33 +89,67 @@ Kendrick.mass.filter <- function(data_matrix,
     mass_defect_parameter <- KMD
     retention_time <- RT
     connections_min_number <- NOS - 1
-   
-    polymer_list <- 
-        list(
-            'alkane_other_CH2' = list('const' = 14.01565, 'const_mz' = 14.0),
-            'oxidation' = list('const' = 15.99492, 'const_mz' = 16.0),
-            'water_cluster' = list('const' = 18.01057, 'const_mz' =18.0),
-            'alkane_C2H4' = list('const' = 28.03130, 'const_mz' =28.0),
-            'methanol_cluster' = list('const' = 32.02622, 'const_mz' =32.0),
-            'acetonitrile_cluster' = list('const' = 41.02655, 'const_mz' =41.0),
-            'propylation_other_C3H6' = list('const' = 42.04695, 'const_mz' =42.0),
-            'polyethylene_glycol_other_C2H4O1' = list('const' = 44.02622, 'const_mz' =44.0),
-            'perfluoro_CF2' = list('const' = 49.99681, 'const_mz' =50.0),
-            'ammoniumchloride_cluster' = list('const' = 53.00323, 'const_mz' =53.0),
-            'butylation_other_C4H8' = list('const' = 56.06260, 'const_mz' =56.0),
-            'sodiumchloride_cluster' = list('const' = 57.95862, 'const_mz' =58.0),
-            'polypropylene_glycol_other_C3H6O1' = list('const' = 58.04187, 'const_mz' =58.0),
-            'ammoniumformate_cluster' = list('const' = 63.03203, 'const_mz' =63.0),
-            'sodiumformate_cluster' = list('const' = 67.98742, 'const_mz' =68.0),
-            'potassiumchloride_cluster' = list('const' = 73.93256, 'const_mz' =74.0),
-            'polysiloxane' = list('const' = 74.01879, 'const_mz' =74.0),
-            'sodiumacetate_cluster' = list('const' = 82.00307, 'const_mz' =82.0)
-            )
+ 
+   if(!is.null(polymer)) {
+        polymer_list <- 
+            list(
+                'alkane_other_CH2' = list('const' = 14.01565, 'const_mz' = 14.0),
+                'oxidation' = list('const' = 15.99492, 'const_mz' = 16.0),
+                'water_cluster' = list('const' = 18.01057, 'const_mz' =18.0),
+                'alkane_C2H4' = list('const' = 28.03130, 'const_mz' =28.0),
+                'methanol_cluster' = list('const' = 32.02622, 'const_mz' =32.0),
+                'acetonitrile_cluster' = list('const' = 41.02655, 'const_mz' =41.0),
+                'propylation_other_C3H6' = list('const' = 42.04695, 'const_mz' =42.0),
+                'polyethylene_glycol_other_C2H4O1' = list('const' = 44.02622, 'const_mz' =44.0),
+                'perfluoro_CF2' = list('const' = 49.99681, 'const_mz' =50.0),
+                'ammoniumchloride_cluster' = list('const' = 53.00323, 'const_mz' =53.0),
+                'butylation_other_C4H8' = list('const' = 56.06260, 'const_mz' =56.0),
+                'sodiumchloride_cluster' = list('const' = 57.95862, 'const_mz' =58.0),
+                'polypropylene_glycol_other_C3H6O1' = list('const' = 58.04187, 'const_mz' =58.0),
+                'ammoniumformate_cluster' = list('const' = 63.03203, 'const_mz' =63.0),
+                'sodiumformate_cluster' = list('const' = 67.98742, 'const_mz' =68.0),
+                'potassiumchloride_cluster' = list('const' = 73.93256, 'const_mz' =74.0),
+                'polysiloxane' = list('const' = 74.01879, 'const_mz' =74.0),
+                'sodiumacetate_cluster' = list('const' = 82.00307, 'const_mz' =82.0)
+                )
+        
+        const <- polymer_list[[which(names(polymer_list)==polymer)]]$const
     
-    const <- polymer_list[[which(names(polymer_list)==polymer)]]$const
-    const_mz <- round(const/fractionBase) 
-    const <- round(const/fractionBase)/(const/fractionBase) 
-    #const_mz <- polymer_list[[which(names(polymer_list)==polymer)]]$const_mz
+        if(fractionBase==1) {
+            const_mz <- round(const) 
+            const <- round(const)/const
+            kend0 <- vec[,1]*const
+        } else {
+            const_mz <- round(const) 
+            #const <- round(const)/const
+            #kend0 <- vec[,1]*const
+            #const_mz <- round(const/fractionBase) 
+            const <- round((const/fractionBase))/(const/fractionBase)
+            #mass_defect_parameter <- mass_defect_parameter*const
+        }
+        #const_mz <- round(const/fractionBase) 
+        #const <- round(const/fractionBase)/(const/fractionBase) 
+        #const_mz <- polymer_list[[which(names(polymer_list)==polymer)]]$const_mz
+    } else {
+        const <- repeat_unit_mass
+    
+        if(fractionBase==1) {
+            const_mz <- round(const) 
+            const <- round(const)/const
+            kend0 <- vec[,1]*const
+        } else {
+            const_mz <- round(const) 
+            #const <- round(const)/const
+            #kend0 <- vec[,1]*const
+            #const_mz <- round(const/fractionBase) 
+            const <- round((const/fractionBase))/(const/fractionBase)
+            #mass_defect_parameter <- mass_defect_parameter*const
+        }
+        #const_mz <- round(const/fractionBase) 
+        #const <- round(const/fractionBase)/(const/fractionBase) 
+        #const_mz <- polymer_list[[which(names(polymer_list)==polymer)]]$const_mz
+
+    }
     
     cb <- combn(1:(length(vec[,1])), 2)
 
@@ -133,6 +168,7 @@ Kendrick.mass.filter <- function(data_matrix,
     cb <- matrix(cb[,v1], nrow=2)
 
     v2 <- round(abs(mat[cb[1,],4]-mat[cb[2,],4]))==const_mz
+    #v2 <- round(abs(kend0[cb[1,]]-kend0[cb[2,]]))==const_mz
     if(!sum(v2)) return(NULL)
     cb <- matrix(cb[,v2], nrow=2)
 
