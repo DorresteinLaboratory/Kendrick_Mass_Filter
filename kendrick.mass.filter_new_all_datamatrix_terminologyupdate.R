@@ -74,7 +74,7 @@ getPeakShape <- function(vec, dimension='mz', minpeaks=3, mxtol=0.6) {
 
 
 Kendrick.mass.filter <- function(data_matrix, 
-                       # vec now includes a third column with intensity
+                       # vec now may include a third column with intensity
                        vec, 
                        polymer="polyethylene_glycol_other_C2H4O1",
 		       repeat_unit_mass=44.02622,
@@ -118,42 +118,30 @@ Kendrick.mass.filter <- function(data_matrix,
         if(fractionBase==1) {
             const_mz <- round(const) 
             const <- round(const)/const
-            kend0 <- vec[,1]*const
         } else {
+            const <- const/fractionBase
             const_mz <- round(const) 
-            #const <- round(const)/const
-            #kend0 <- vec[,1]*const
-            #const_mz <- round(const/fractionBase) 
-            const <- round((const/fractionBase))/(const/fractionBase)
-            #mass_defect_parameter <- mass_defect_parameter*const
+            const <- round(const)/const
         }
-        #const_mz <- round(const/fractionBase) 
-        #const <- round(const/fractionBase)/(const/fractionBase) 
-        #const_mz <- polymer_list[[which(names(polymer_list)==polymer)]]$const_mz
     } else {
         const <- repeat_unit_mass
     
         if(fractionBase==1) {
             const_mz <- round(const) 
             const <- round(const)/const
-            kend0 <- vec[,1]*const
         } else {
+            const <- const/fractionBase
             const_mz <- round(const) 
-            #const <- round(const)/const
-            #kend0 <- vec[,1]*const
-            #const_mz <- round(const/fractionBase) 
-            const <- round((const/fractionBase))/(const/fractionBase)
-            #mass_defect_parameter <- mass_defect_parameter*const
+            const <- round(const)/const
         }
-        #const_mz <- round(const/fractionBase) 
-        #const <- round(const/fractionBase)/(const/fractionBase) 
-        #const_mz <- polymer_list[[which(names(polymer_list)==polymer)]]$const_mz
 
     }
     
     cb <- combn(1:(length(vec[,1])), 2)
 
+    # KM(ion)
     kend <- vec[,1]*const
+    # KMD
     msdefect <- round(kend)-kend
 
     if(ncol(vec)==2) {
@@ -161,6 +149,7 @@ Kendrick.mass.filter <- function(data_matrix,
     } else {
         mat <- cbind(vec[,-3], msdefect, kend, round(kend))
     }
+    # nom_kend == NKM
     colnames(mat) <- c("m/z","RT","msdefect","kend","nom_kend")
     
     v1 <- abs(mat[cb[1,],3]-mat[cb[2,],3])<= mass_defect_parameter
@@ -168,7 +157,6 @@ Kendrick.mass.filter <- function(data_matrix,
     cb <- matrix(cb[,v1], nrow=2)
 
     v2 <- round(abs(mat[cb[1,],4]-mat[cb[2,],4]))==const_mz
-    #v2 <- round(abs(kend0[cb[1,]]-kend0[cb[2,]]))==const_mz
     if(!sum(v2)) return(NULL)
     cb <- matrix(cb[,v2], nrow=2)
 
